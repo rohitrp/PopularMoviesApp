@@ -1,13 +1,8 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.RecyclerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.github.rohitrp.popularmovies.MovieFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="hello" />
-
-</FrameLayout>
+    tools:context="io.github.rohitrp.popularmovies.MovieFragment"
+    android:scrollbars="vertical"
+    android:id="@+id/recycler_view" />

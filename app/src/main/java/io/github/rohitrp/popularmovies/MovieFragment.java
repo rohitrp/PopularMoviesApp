@@ -4,6 +4,9 @@ import android.app.Fragment;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,12 +25,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MovieFragment extends Fragment {
 
     private final String LOG_TAG = MovieFragment.class.getSimpleName();
+    private RecyclerView mRecyclerView;
 
     public MovieFragment() {
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateMovies();
     }
 
     @Override
@@ -37,12 +49,30 @@ public class MovieFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
+        mRecyclerView = (RecyclerView) inflater.inflate(
+                R.layout.fragment_movie, container, false);
 
-        return rootView;
+        setupRecyclerView();
+        return mRecyclerView;
+    }
+
+    private void setupRecyclerView() {
+        mRecyclerView.setLayoutManager(new GridLayoutManager(
+                mRecyclerView.getContext(), 2));
+
+        // TODO: See if empty ArrayList can be replaced with moviees ArrayList
+        mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
+                new ArrayList<Movie>()));
+    }
+
+    private void updateMovies() {
+        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
+
+        fetchMoviesTask.execute("top_rated");
     }
 
     @Override
@@ -56,14 +86,14 @@ public class MovieFragment extends Fragment {
         int id = item.getItemId();
 
         if (id == R.id.menu_refresh) {
-            new FetchMovies().execute("top_rated");
+            updateMovies();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchMovies extends AsyncTask<String, Void, Movie[]> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
         @Override
         protected Movie[] doInBackground(String... params) {
 
@@ -139,6 +169,14 @@ public class MovieFragment extends Fragment {
             // This will only happen if there was an error getting or parsing
             // movies.
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Movie[] movies) {
+            if (movies != null) {
+                mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
+                        new ArrayList<Movie>(Arrays.asList(movies))));
+            }
         }
 
         private Movie[] getMoviesDataFromJson(String moviesJsonStr)
