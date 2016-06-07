@@ -1,6 +1,9 @@
 package io.github.rohitrp.popularmovies;
 
-public class Movie {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Movie implements Parcelable {
     private String mTitle;
     private String mPosterUrl;
     private String mSynopsis;
@@ -28,6 +31,18 @@ public class Movie {
         this.mIsAdult = isAdult;
     }
 
+    public Movie(Parcel parcel) {
+        this.mTitle = parcel.readString();
+        this.mPosterUrl = parcel.readString();
+        this.mSynopsis = parcel.readString();
+        this.mRatings = parcel.readDouble();
+        this.mReleaseDate = parcel.readString();
+
+        boolean[] parcelableBoolArray = new boolean[1];
+        parcel.readBooleanArray(parcelableBoolArray);
+        this.mIsAdult = parcelableBoolArray[0];
+    }
+
     public String getTitle() {
         return mTitle;
     }
@@ -52,4 +67,31 @@ public class Movie {
     public boolean isAdult() {
         return mIsAdult;
     }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mTitle);
+        dest.writeString(mPosterUrl);
+        dest.writeString(mSynopsis);
+        dest.writeDouble(mRatings);
+        dest.writeString(mReleaseDate);
+        dest.writeBooleanArray(new boolean[]{mIsAdult});
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }
