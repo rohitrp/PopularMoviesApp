@@ -11,9 +11,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -47,8 +44,6 @@ public class MovieFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -79,24 +74,6 @@ public class MovieFragment extends Fragment {
         fetchMoviesTask.execute(sharedPreferences.getString(
                 getString(R.string.pref_sort_key),
                 getString(R.string.pref_sort_default)));
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.moviefragment, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-
-        if (id == R.id.menu_refresh) {
-            updateMovies();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
