@@ -58,6 +58,9 @@ public class MovieFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
+
+        // TODO: Try different number of columns for different orientations
+        // (2 for vertical, 3 for Horizontal)
         mRecyclerView.setLayoutManager(new GridLayoutManager(
                 mRecyclerView.getContext(), 2));
 
@@ -170,9 +173,6 @@ public class MovieFragment extends Fragment {
             final String TMDB_RELEASE_DATE = "release_date";
             final String TMDB_TITLE = "original_title";
             final String TMDB_RATINGS = "vote_average";
-            final String TMDB_BASE_POSTER_URL =
-                    "http://image.tmdb.org/t/p/";
-            final String TMDB_POSTER_SIZE = "w185";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(TMDB_RESULTS);
@@ -190,8 +190,7 @@ public class MovieFragment extends Fragment {
                 JSONObject currMovie = moviesArray.getJSONObject(i);
 
                 title = currMovie.getString(TMDB_TITLE);
-                posterUrl = TMDB_BASE_POSTER_URL + TMDB_POSTER_SIZE +
-                        currMovie.getString(TMDB_POSTER_PATH);
+                posterUrl = currMovie.getString(TMDB_POSTER_PATH);
                 synopsis = currMovie.getString(TMDB_SYNOPSIS);
                 ratings = currMovie.getDouble(TMDB_RATINGS);
                 releaseDate = currMovie.getString(TMDB_RELEASE_DATE);

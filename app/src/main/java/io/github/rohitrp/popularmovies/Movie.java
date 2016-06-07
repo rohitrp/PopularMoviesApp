@@ -8,6 +8,15 @@ public class Movie {
     private String mReleaseDate;
     private boolean mIsAdult;
 
+    // Constants that can be used when requesting poster of different
+    // sizes.
+    public static final String POSTER_SIZE_NORMAL = "w342";
+    public static final String POSTER_SIZE_LARGE = "w500";
+    public static final String POSTER_SIZE_EXTRA_LARGE = "w780";
+
+    // Placeholder drawable
+    public static final int LOADING_PLACEHOLDER = R.drawable.ellipsis;
+
     public Movie(String title, String posterUrl,
                  String synopsis, double ratings, String releaseDate,
                  boolean isAdult) {
@@ -23,8 +32,9 @@ public class Movie {
         return mTitle;
     }
 
-    public String getPosterUrl() {
-        return mPosterUrl;
+    public String getPosterUrl(String posterSize) {
+        final String TMDB_BASE_POSTER_URL = "http://image.tmdb.org/t/p/";
+        return TMDB_BASE_POSTER_URL + posterSize + mPosterUrl;
     }
 
     public String getSynopsis() {

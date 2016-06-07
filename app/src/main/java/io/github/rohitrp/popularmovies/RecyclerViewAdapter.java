@@ -2,8 +2,8 @@ package io.github.rohitrp.popularmovies;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +45,7 @@ public class RecyclerViewAdapter
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -65,8 +65,9 @@ public class RecyclerViewAdapter
                 ImageView imageView = (ImageView) dialog.findViewById(R.id.dialog_poster);
                 Picasso.with(dialog.getContext())
                         .load(mMovies.get(holder.getAdapterPosition())
-                            .getPosterUrl())
+                            .getPosterUrl(Movie.POSTER_SIZE_LARGE))
                         .fit()
+                        .placeholder(Movie.LOADING_PLACEHOLDER)
                         .into(imageView);
                 dialog.show();
                 return true;
@@ -76,14 +77,18 @@ public class RecyclerViewAdapter
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
-                Snackbar.make(v, mMovies.get(holder.getAdapterPosition()).getTitle(), Snackbar.LENGTH_SHORT)
-                        .show();
+
+                Intent intent = new Intent(context, MovieDetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, position);
+                context.startActivity(intent);
+
             }
         });
 
         Picasso.with(holder.mImageView.getContext())
-                .load(mMovies.get(position).getPosterUrl())
+                .load(mMovies.get(position).getPosterUrl(Movie.POSTER_SIZE_NORMAL))
                 .fit()
+                .placeholder(Movie.LOADING_PLACEHOLDER)
                 .into(holder.mImageView);
     }
 
