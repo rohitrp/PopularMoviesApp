@@ -32,18 +32,27 @@ public class MovieFragment extends Fragment {
     private final String LOG_TAG = MovieFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
 
-    public MovieFragment() {
-    }
+    private ArrayList<Movie> mMoviesList;
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateMovies();
+    public MovieFragment() {
+        mMoviesList = new ArrayList<>();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+            updateMovies();
+        } else {
+            mMoviesList = savedInstanceState.getParcelableArrayList("movies");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("movies", mMoviesList);
+        super.onSaveInstanceState(outState);
     }
 
     @Nullable
@@ -66,6 +75,8 @@ public class MovieFragment extends Fragment {
 
         mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
                 new ArrayList<Movie>()));
+
+        setAdapter();
     }
 
     private void updateMovies() {
@@ -77,6 +88,11 @@ public class MovieFragment extends Fragment {
         fetchMoviesTask.execute(sharedPreferences.getString(
                 getString(R.string.pref_sort_key),
                 getString(R.string.pref_sort_default)));
+    }
+
+    private void setAdapter() {
+        mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
+                mMoviesList));
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
@@ -158,8 +174,8 @@ public class MovieFragment extends Fragment {
         @Override
         protected void onPostExecute(Movie[] movies) {
             if (movies != null) {
-                mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
-                        new ArrayList<Movie>(Arrays.asList(movies))));
+                mMoviesList = new ArrayList<>(Arrays.asList(movies));
+                setAdapter();
             }
         }
 
