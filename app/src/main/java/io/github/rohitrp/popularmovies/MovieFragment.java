@@ -1,9 +1,11 @@
 package io.github.rohitrp.popularmovies;
 
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -64,15 +66,19 @@ public class MovieFragment extends Fragment {
         mRecyclerView.setLayoutManager(new GridLayoutManager(
                 mRecyclerView.getContext(), 2));
 
-        // TODO: See if empty ArrayList can be replaced with moviees ArrayList
         mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
                 new ArrayList<Movie>()));
     }
 
     private void updateMovies() {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
 
-        fetchMoviesTask.execute("top_rated");
+        fetchMoviesTask.execute(sharedPreferences.getString(
+                getString(R.string.pref_sort_key),
+                getString(R.string.pref_sort_default)));
     }
 
     @Override
@@ -115,8 +121,6 @@ public class MovieFragment extends Fragment {
                         .build();
 
                 URL url = new URL(builtUri.toString());
-
-                Log.d(LOG_TAG, builtUri.toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");

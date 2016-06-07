@@ -1,12 +1,15 @@
 package io.github.rohitrp.popularmovies;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -37,17 +40,43 @@ public class RecyclerViewAdapter
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.movie_card_view, parent, false);
+                .inflate(R.layout.movie_layout, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
+        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                final Dialog dialog = new Dialog(v.getContext());
+                dialog.setContentView(R.layout.movie_dialog);
+                dialog.setTitle(mMovies.get(holder.getAdapterPosition()).getTitle());
+
+                TextView textView = (TextView) dialog.findViewById(R.id.dialog_text_view);
+                textView.setText(mMovies.get(holder.getAdapterPosition())
+                    .getTitle());
+
+                Typeface openSansCondensedLight = Typeface.createFromAsset(
+                        mContext.getAssets(), "fonts/OpenSans-CondLight.ttf");
+
+                textView.setTypeface(openSansCondensedLight);
+
+                ImageView imageView = (ImageView) dialog.findViewById(R.id.dialog_poster);
+                Picasso.with(dialog.getContext())
+                        .load(mMovies.get(holder.getAdapterPosition())
+                            .getPosterUrl())
+                        .fit()
+                        .into(imageView);
+                dialog.show();
+                return true;
+            }
+        });
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
-                Snackbar.make(v, mMovies.get(position).getTitle(), Snackbar.LENGTH_SHORT)
+                Snackbar.make(v, mMovies.get(holder.getAdapterPosition()).getTitle(), Snackbar.LENGTH_SHORT)
                         .show();
             }
         });
