@@ -1,6 +1,7 @@
 package io.github.rohitrp.popularmovies;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -10,9 +11,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,10 +72,21 @@ public class MovieFragment extends Fragment {
 
     private void setupRecyclerView() {
 
-        // TODO: Try different number of columns for different orientations
-        // (2 for vertical, 3 for Horizontal)
+        Display display = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay();
+
+        int orientation = display.getRotation();
+        int cols = 2;           // In vertical orientation, number of columns = 2
+
+        // Check if orientation is horizontal. If it is, change number
+        // of columns to 3
+        if (orientation == Surface.ROTATION_90 ||
+                orientation == Surface.ROTATION_270) {
+            cols = 3;
+        }
+
         mRecyclerView.setLayoutManager(new GridLayoutManager(
-                mRecyclerView.getContext(), 2));
+                mRecyclerView.getContext(), cols));
 
         mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
                 new ArrayList<Movie>()));
