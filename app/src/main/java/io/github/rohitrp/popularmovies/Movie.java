@@ -88,7 +88,7 @@ public class Movie implements Parcelable {
         dest.writeDouble(mRatings);
         dest.writeString(mReleaseDate);
         dest.writeBooleanArray(new boolean[]{mIsAdult});
-        dest.writeString(mPosterPath);
+        dest.writeString(mBackdropPath);
     }
 
     @Override
