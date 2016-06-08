@@ -1,6 +1,7 @@
 package io.github.rohitrp.popularmovies;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -45,9 +46,16 @@ public class MovieDetailActivity extends AppCompatActivity {
             Intent intent = getActivity().getIntent();
             Movie movie = intent.getParcelableExtra(Intent.EXTRA_TEXT);
 
-            TextView textView = (TextView) rootView.findViewById(R.id.movie_detail_title);
-            textView.setText(movie.getTitle());
+            // Movie title
+            TextView titleView = (TextView) rootView.findViewById(R.id.movie_detail_title);
+            titleView.setText(movie.getTitle());
 
+            // Movie title's font
+            Typeface openSansCondensedLight = Typeface.createFromAsset(
+                    getActivity().getAssets(), "fonts/OpenSans-CondLight.ttf");
+            titleView.setTypeface(openSansCondensedLight);
+
+            // Backdrop image
             ImageView imageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster);
 
             Picasso.with(getContext())
@@ -55,6 +63,15 @@ public class MovieDetailActivity extends AppCompatActivity {
                     .fit()
                     .placeholder(Movie.LOADING_PLACEHOLDER)
                     .into(imageView);
+
+            // Synopsis
+            TextView synopsisTitle = (TextView) rootView
+                    .findViewById(R.id.movie_detail_synopsis_title);
+            synopsisTitle.setText("Synopsis");
+
+            TextView synopsisBody = (TextView) rootView
+                    .findViewById(R.id.movie_detail_synopsis_body);
+            synopsisBody.setText(movie.getSynopsis());
 
             return rootView;
         }

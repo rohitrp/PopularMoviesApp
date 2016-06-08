@@ -5,4 +5,4 @@
     android:layout_height="match_parent"
     tools:context="io.github.rohitrp.popularmovies.MovieFragment"
     android:scrollbars="vertical"
-    android:id="@+id/recycler_view" />
+    android:id="@+id/fragment_movie_recycler_view" />

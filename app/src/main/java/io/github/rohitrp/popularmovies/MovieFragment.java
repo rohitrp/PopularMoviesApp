@@ -88,7 +88,7 @@ public class MovieFragment extends Fragment {
         mRecyclerView.setLayoutManager(new GridLayoutManager(
                 mRecyclerView.getContext(), cols));
 
-        mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
+        mRecyclerView.setAdapter(new MovieRecyclerViewAdapter(getActivity(),
                 new ArrayList<Movie>()));
 
         setAdapter();
@@ -106,7 +106,7 @@ public class MovieFragment extends Fragment {
     }
 
     private void setAdapter() {
-        mRecyclerView.setAdapter(new RecyclerViewAdapter(getActivity(),
+        mRecyclerView.setAdapter(new MovieRecyclerViewAdapter(getActivity(),
                 mMoviesList));
     }
 

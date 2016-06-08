@@ -15,8 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class RecyclerViewAdapter
-        extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+public class MovieRecyclerViewAdapter
+        extends RecyclerView.Adapter<MovieRecyclerViewAdapter.ViewHolder> {
 
     private List<Movie> mMovies;
     private Context mContext;
@@ -32,7 +32,7 @@ public class RecyclerViewAdapter
         }
     }
 
-    public RecyclerViewAdapter(Context context, List<Movie> movies) {
+    public MovieRecyclerViewAdapter(Context context, List<Movie> movies) {
         mMovies = movies;
         mContext = context;
     }
@@ -40,7 +40,7 @@ public class RecyclerViewAdapter
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.movie_layout, parent, false);
+                .inflate(R.layout.fragment_movie_layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -50,7 +50,7 @@ public class RecyclerViewAdapter
             @Override
             public boolean onLongClick(View v) {
                 final Dialog dialog = new Dialog(v.getContext());
-                dialog.setContentView(R.layout.movie_dialog);
+                dialog.setContentView(R.layout.fragment_movie_dialog);
                 dialog.setTitle(mMovies.get(holder.getAdapterPosition()).getTitle());
 
                 TextView textView = (TextView) dialog.findViewById(R.id.dialog_text_view);
