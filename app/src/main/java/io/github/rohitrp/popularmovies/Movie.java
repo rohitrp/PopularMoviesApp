@@ -5,11 +5,12 @@ import android.os.Parcelable;
 
 public class Movie implements Parcelable {
     private String mTitle;
-    private String mPosterUrl;
+    private String mPosterPath;
     private String mSynopsis;
     private double mRatings;
     private String mReleaseDate;
     private boolean mIsAdult;
+    private String mBackdropPath;
 
     // Constants that can be used when requesting poster of different
     // sizes.
@@ -20,20 +21,21 @@ public class Movie implements Parcelable {
     // Placeholder drawable
     public static final int LOADING_PLACEHOLDER = R.drawable.ellipsis;
 
-    public Movie(String title, String posterUrl,
+    public Movie(String title, String posterPath,
                  String synopsis, double ratings, String releaseDate,
-                 boolean isAdult) {
+                 boolean isAdult, String backdropPath) {
         this.mTitle = title;
-        this.mPosterUrl = posterUrl;
+        this.mPosterPath = posterPath;
         this.mSynopsis = synopsis;
         this.mRatings = ratings;
         this.mReleaseDate = releaseDate;
         this.mIsAdult = isAdult;
+        this.mBackdropPath = backdropPath;
     }
 
     public Movie(Parcel parcel) {
         this.mTitle = parcel.readString();
-        this.mPosterUrl = parcel.readString();
+        this.mPosterPath = parcel.readString();
         this.mSynopsis = parcel.readString();
         this.mRatings = parcel.readDouble();
         this.mReleaseDate = parcel.readString();
@@ -41,6 +43,8 @@ public class Movie implements Parcelable {
         boolean[] parcelableBoolArray = new boolean[1];
         parcel.readBooleanArray(parcelableBoolArray);
         this.mIsAdult = parcelableBoolArray[0];
+
+        this.mBackdropPath = parcel.readString();
     }
 
     public String getTitle() {
@@ -48,8 +52,16 @@ public class Movie implements Parcelable {
     }
 
     public String getPosterUrl(String posterSize) {
+        return getUrl(mPosterPath, posterSize);
+    }
+
+    public String getBackdropUrl(String posterSize) {
+        return getUrl(mBackdropPath, posterSize);
+    }
+
+    private String getUrl(String path, String posterSize) {
         final String TMDB_BASE_POSTER_URL = "http://image.tmdb.org/t/p/";
-        return TMDB_BASE_POSTER_URL + posterSize + mPosterUrl;
+        return TMDB_BASE_POSTER_URL + posterSize + path;
     }
 
     public String getSynopsis() {
@@ -71,11 +83,12 @@ public class Movie implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mTitle);
-        dest.writeString(mPosterUrl);
+        dest.writeString(mPosterPath);
         dest.writeString(mSynopsis);
         dest.writeDouble(mRatings);
         dest.writeString(mReleaseDate);
         dest.writeBooleanArray(new boolean[]{mIsAdult});
+        dest.writeString(mPosterPath);
     }
 
     @Override

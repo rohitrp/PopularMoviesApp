@@ -204,6 +204,7 @@ public class MovieFragment extends Fragment {
             final String TMDB_RELEASE_DATE = "release_date";
             final String TMDB_TITLE = "original_title";
             final String TMDB_RATINGS = "vote_average";
+            final String TMDB_BACKDROP_PATH = "backdrop_path";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(TMDB_RESULTS);
@@ -212,23 +213,25 @@ public class MovieFragment extends Fragment {
 
             for (int i = 0; i < moviesArray.length(); i++) {
                 String title;
-                String posterUrl;
+                String posterPath;
                 String synopsis;
                 double ratings;
                 String releaseDate;
                 boolean isAdult;
+                String backdropPath;
 
                 JSONObject currMovie = moviesArray.getJSONObject(i);
 
                 title = currMovie.getString(TMDB_TITLE);
-                posterUrl = currMovie.getString(TMDB_POSTER_PATH);
+                posterPath = currMovie.getString(TMDB_POSTER_PATH);
                 synopsis = currMovie.getString(TMDB_SYNOPSIS);
                 ratings = currMovie.getDouble(TMDB_RATINGS);
                 releaseDate = currMovie.getString(TMDB_RELEASE_DATE);
                 isAdult = currMovie.getBoolean(TMDB_ADULT);
+                backdropPath = currMovie.getString(TMDB_BACKDROP_PATH);
 
-                resultMovies[i] = new Movie(title, posterUrl, synopsis,
-                        ratings, releaseDate, isAdult);
+                resultMovies[i] = new Movie(title, posterPath, synopsis,
+                        ratings, releaseDate, isAdult, backdropPath);
             }
 
             return resultMovies;
