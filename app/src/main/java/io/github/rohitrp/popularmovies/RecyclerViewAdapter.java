@@ -79,7 +79,7 @@ public class RecyclerViewAdapter
                 Context context = v.getContext();
 
                 Intent intent = new Intent(context, MovieDetailActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, position);
+                intent.putExtra(Intent.EXTRA_TEXT, mMovies.get(position));
                 context.startActivity(intent);
 
             }
