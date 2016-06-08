@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +32,10 @@ public class MovieDetailActivity extends AppCompatActivity {
     }
 
     public static class MovieDetailFragment extends Fragment {
+        private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
+
+        private RecyclerView mRecyclerView;
+
         public MovieDetailFragment() {
         }
 
@@ -45,6 +52,9 @@ public class MovieDetailActivity extends AppCompatActivity {
 
             Intent intent = getActivity().getIntent();
             Movie movie = intent.getParcelableExtra(Intent.EXTRA_TEXT);
+
+            mRecyclerView = (RecyclerView) rootView.findViewById(R.id.fragment_movie_detail_rv);
+            setupRecyclerView(movie);
 
             // Movie title
             TextView titleView = (TextView) rootView.findViewById(R.id.movie_detail_title);
@@ -63,17 +73,26 @@ public class MovieDetailActivity extends AppCompatActivity {
                     .fit()
                     .placeholder(Movie.LOADING_PLACEHOLDER)
                     .into(imageView);
-
-            // Synopsis
-            TextView synopsisTitle = (TextView) rootView
-                    .findViewById(R.id.movie_detail_synopsis_title);
-            synopsisTitle.setText("Synopsis");
-
-            TextView synopsisBody = (TextView) rootView
-                    .findViewById(R.id.movie_detail_synopsis_body);
-            synopsisBody.setText(movie.getSynopsis());
+//
+//            // Synopsis
+//            TextView synopsisTitle = (TextView) rootView
+//                    .findViewById(R.id.movie_detail_synopsis_title);
+//            synopsisTitle.setText("Synopsis");
+//
+//            TextView synopsisBody = (TextView) rootView
+//                    .findViewById(R.id.movie_detail_synopsis_body);
+//            synopsisBody.setText(movie.getSynopsis());
 
             return rootView;
+        }
+
+        private void setupRecyclerView(Movie movie) {
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(
+                    mRecyclerView.getContext()));
+
+            Log.d(LOG_TAG, "HERE");
+            mRecyclerView.setAdapter(new MovieDetailRecyclerViewAdapter(
+                    getActivity(), movie.getTitleBodyPairs()));
         }
     }
 }

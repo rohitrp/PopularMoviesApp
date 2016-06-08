@@ -3,6 +3,9 @@ package io.github.rohitrp.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Movie implements Parcelable {
     private String mTitle;
     private String mPosterPath;
@@ -80,6 +83,30 @@ public class Movie implements Parcelable {
         return mIsAdult;
     }
 
+    /**
+     * Helper method to get Title - Body pairs to use in RecyclerView
+     * using Movie.MovieDetail helper class.
+     *
+     * @return List of Movie.MovieDetail
+     */
+    public List<Movie.MovieDetail> getTitleBodyPairs() {
+        ArrayList<MovieDetail> movieDetails = new ArrayList<>();
+
+        final String synopsisTitle = "Synopsis";
+        final String releaseDateTitle = "Release Date";
+        final String ratingsTitle = "Ratings";
+        final String isAdultTitle = "Is Adult?";
+
+        movieDetails.add(new MovieDetail(synopsisTitle, mSynopsis));
+        movieDetails.add(new MovieDetail(releaseDateTitle, mReleaseDate));
+        movieDetails.add(new MovieDetail(ratingsTitle,
+                String.valueOf(mRatings)));
+        movieDetails.add(new MovieDetail(isAdultTitle,
+                mIsAdult ? "Yes" : "No"));
+
+        return movieDetails;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mTitle);
@@ -107,4 +134,36 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    /**
+     * A helper class to store movie details as
+     * key (Title) - value (Body) pair.
+     *
+     * Example use -
+     * 1) mTitle - Synopsis
+     *    mBody - The synopsis (or description) of the movie.
+     *
+     * 2) mTitle - Release Date
+     *    mBody - The release date of movie.
+     *
+     * The class is used in the RecyclerView for the MovieDetailActivity.
+     */
+    public static class MovieDetail {
+        private final String mTitle;
+        private final String mBody;
+
+        public MovieDetail(String title, String body) {
+            this.mTitle = title;
+            this.mBody = body;
+        }
+
+        public String getTitle() {
+            return mTitle;
+        }
+
+        public String getBody() {
+            return mBody;
+        }
+
+    }
 }
