@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,15 +72,6 @@ public class MovieDetailActivity extends AppCompatActivity {
                     .fit()
                     .placeholder(Movie.LOADING_PLACEHOLDER)
                     .into(imageView);
-//
-//            // Synopsis
-//            TextView synopsisTitle = (TextView) rootView
-//                    .findViewById(R.id.movie_detail_synopsis_title);
-//            synopsisTitle.setText("Synopsis");
-//
-//            TextView synopsisBody = (TextView) rootView
-//                    .findViewById(R.id.movie_detail_synopsis_body);
-//            synopsisBody.setText(movie.getSynopsis());
 
             return rootView;
         }
@@ -90,7 +80,6 @@ public class MovieDetailActivity extends AppCompatActivity {
             mRecyclerView.setLayoutManager(new LinearLayoutManager(
                     mRecyclerView.getContext()));
 
-            Log.d(LOG_TAG, "HERE");
             mRecyclerView.setAdapter(new MovieDetailRecyclerViewAdapter(
                     getActivity(), movie.getTitleBodyPairs()));
         }
