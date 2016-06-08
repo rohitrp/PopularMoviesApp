@@ -50,8 +50,8 @@ public class MovieDetailActivity extends AppCompatActivity {
 
             ImageView imageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster);
 
-            Picasso.with(container.getContext())
-                    .load(movie.getPosterUrl(Movie.POSTER_SIZE_EXTRA_LARGE))
+            Picasso.with(getContext())
+                    .load(movie.getBackdropUrl(Movie.POSTER_SIZE_EXTRA_LARGE))
                     .fit()
                     .placeholder(Movie.LOADING_PLACEHOLDER)
                     .into(imageView);
