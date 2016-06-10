@@ -161,6 +161,7 @@ public class MovieFragment extends Fragment {
             HttpURLConnection urlConnection = null;
 
             String moviesJsonStr = null;
+            String genresJsonStr = null;
 
             try {
 
@@ -180,10 +181,23 @@ public class MovieFragment extends Fragment {
 
                 URL moviesUrl = new URL(moviesBuiltUri.toString());
 
+                // URL to fetch movie genres
+                Uri genresBuiltUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                        .appendPath("genre")
+                        .appendPath("movie")
+                        .appendPath("list")
+                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDb_API_KEY)
+                        .build();
+
+                URL genresUrl = new URL(genresBuiltUri.toString());
+
                 // Get movies data
                 urlConnection = (HttpURLConnection) moviesUrl.openConnection();
                 moviesJsonStr = fetchJsonData(urlConnection);
 
+                // Get genres data
+                urlConnection = (HttpURLConnection) genresUrl.openConnection();
+                genresJsonStr = fetchJsonData(urlConnection);
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
