@@ -159,46 +159,32 @@ public class MovieFragment extends Fragment {
             if (params.length == 0) return null;
 
             HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
 
             String moviesJsonStr = null;
 
             try {
+
+                // Base URL for both movie and its genres
                 final String TMDB_BASE_URL =
-                        "http://api.themoviedb.org/3/movie/";
+                        "http://api.themoviedb.org/3/";
+
+                // TMDb's API key
                 final String API_KEY_PARAM = "api_key";
 
-                Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                // URL to fetch movie data
+                Uri moviesBuiltUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                        .appendPath("movie")
                         .appendPath(params[0])
                         .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDb_API_KEY)
                         .build();
 
-                URL url = new URL(builtUri.toString());
+                URL moviesUrl = new URL(moviesBuiltUri.toString());
 
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
+                // Get movies data
+                urlConnection = (HttpURLConnection) moviesUrl.openConnection();
+                moviesJsonStr = fetchJsonData(urlConnection);
 
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
 
-                if (inputStream == null) {
-                    return null;
-                }
-
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    return null;
-                }
-
-                moviesJsonStr = buffer.toString();
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
 
@@ -206,13 +192,6 @@ public class MovieFragment extends Fragment {
             } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
                 }
             }
 
@@ -226,6 +205,50 @@ public class MovieFragment extends Fragment {
             // This will only happen if there was an error getting or parsing
             // movies.
             return null;
+        }
+
+        /**
+         * Helper method to fetch data from the provided url
+         * @param urlConnection URL connection opened with the url from
+         *                      which data is to be fetched
+         * @return JSON data received from the url connection
+         * @throws IOException
+         */
+        private String fetchJsonData(HttpURLConnection urlConnection)
+                throws IOException {
+
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+
+            if (inputStream == null) {
+                return null;
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                return null;
+            }
+
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+
+            // Return the JSON received from the url
+            return buffer.toString();
         }
 
         @Override
