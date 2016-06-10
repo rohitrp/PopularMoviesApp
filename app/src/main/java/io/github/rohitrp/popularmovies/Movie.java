@@ -22,7 +22,7 @@ public class Movie implements Parcelable {
     public static final String POSTER_SIZE_EXTRA_LARGE = "w780";
 
     // Placeholder drawable
-    public static final int LOADING_PLACEHOLDER = R.drawable.ellipsis;
+    public static final int LOADING_PLACEHOLDER = R.drawable.loading;
 
     public Movie(String title, String posterPath,
                  String synopsis, double ratings, String releaseDate,
