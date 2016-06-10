@@ -2,6 +2,7 @@ package io.github.rohitrp.popularmovies;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -34,6 +35,11 @@ import java.util.Arrays;
 public class MovieFragment extends Fragment {
 
     private final String LOG_TAG = MovieFragment.class.getSimpleName();
+
+    // Keys used to store and retrieve saved instance states
+    private final String PREF_KEY = "sort_pref";
+    private final String MOVIES_KEY = "movies";
+
     private RecyclerView mRecyclerView;
 
     private ArrayList<Movie> mMoviesList;
@@ -46,7 +52,8 @@ public class MovieFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+        if (savedInstanceState == null
+                || !savedInstanceState.containsKey(MOVIES_KEY)) {
             updateMovies();
         } else {
             mMoviesList = savedInstanceState.getParcelableArrayList("movies");
@@ -55,8 +62,43 @@ public class MovieFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList("movies", mMoviesList);
+        outState.putParcelableArrayList(MOVIES_KEY, mMoviesList);
+
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        String pref = prefs.getString(
+                getString(R.string.pref_sort_key),
+                getString(R.string.pref_sort_default));
+
+        // Save the current sorting preference to compare it with the
+        // sorting preference when the activity resumes
+        getActivity().getIntent().putExtra(PREF_KEY, pref);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String currentPref = prefs.getString(
+                getString(R.string.pref_sort_key),
+                getString(R.string.pref_sort_default));
+
+        Intent intent = getActivity().getIntent();
+
+        // Check if the sorting preference when the activity was stopped is
+        // same as the current sorting preference. If it is not, fetch data
+        // with the new sorting preference.
+        if (intent.hasExtra(PREF_KEY)
+                && !intent.getStringExtra(PREF_KEY).equals(currentPref)) {
+            updateMovies();
+        }
+
     }
 
     @Nullable
