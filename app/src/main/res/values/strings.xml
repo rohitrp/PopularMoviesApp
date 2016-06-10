@@ -8,14 +8,16 @@
     <string name="pref_sort_key" translatable="false">sort</string>
     <string name="pref_sort_default">popular</string>
 
-    <array name="pref_sort_keys">
+    <string name="menu_share">Share</string>
+
+    <string-array name="pref_sort_keys">
         <item>Popular</item>
         <item>Top Rated</item>
-    </array>
+    </string-array>
 
-    <array name="pref_sort_values">
+    <string-array name="pref_sort_values">
         <item>popular</item>
         <item>top_rated</item>
-    </array>
+    </string-array>
 
 </resources>
