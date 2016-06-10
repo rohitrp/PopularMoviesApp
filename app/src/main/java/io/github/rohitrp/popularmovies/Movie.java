@@ -2,6 +2,7 @@ package io.github.rohitrp.popularmovies;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ public class Movie implements Parcelable {
     private String mReleaseDate;
     private boolean mIsAdult;
     private String mBackdropPath;
+    private ArrayList<String> mGenres;
 
     // Constants that can be used when requesting poster of different
     // sizes.
@@ -26,7 +28,7 @@ public class Movie implements Parcelable {
 
     public Movie(String title, String posterPath,
                  String synopsis, double ratings, String releaseDate,
-                 boolean isAdult, String backdropPath) {
+                 boolean isAdult, String backdropPath, ArrayList<String> genresIds) {
         this.mTitle = title;
         this.mPosterPath = posterPath;
         this.mSynopsis = synopsis;
@@ -34,6 +36,7 @@ public class Movie implements Parcelable {
         this.mReleaseDate = releaseDate;
         this.mIsAdult = isAdult;
         this.mBackdropPath = backdropPath;
+        this.mGenres = new ArrayList<>(genresIds);
     }
 
     public Movie(Parcel parcel) {
@@ -48,6 +51,9 @@ public class Movie implements Parcelable {
         this.mIsAdult = parcelableBoolArray[0];
 
         this.mBackdropPath = parcel.readString();
+
+        this.mGenres = new ArrayList<>();
+        parcel.readStringList(this.mGenres);
     }
 
     public String getTitle() {
@@ -93,11 +99,13 @@ public class Movie implements Parcelable {
         ArrayList<MovieDetail> movieDetails = new ArrayList<>();
 
         final String synopsisTitle = "Synopsis";
+        final String genresTitle = "Genres";
         final String releaseDateTitle = "Release Date";
         final String ratingsTitle = "Ratings";
         final String isAdultTitle = "Is Adult?";
 
         movieDetails.add(new MovieDetail(synopsisTitle, mSynopsis));
+        movieDetails.add(new MovieDetail(genresTitle, TextUtils.join(", ", mGenres)));
         movieDetails.add(new MovieDetail(releaseDateTitle, mReleaseDate));
         movieDetails.add(new MovieDetail(ratingsTitle,
                 String.valueOf(mRatings)));
@@ -116,6 +124,7 @@ public class Movie implements Parcelable {
         dest.writeString(mReleaseDate);
         dest.writeBooleanArray(new boolean[]{mIsAdult});
         dest.writeString(mBackdropPath);
+        dest.writeStringList(mGenres);
     }
 
     @Override

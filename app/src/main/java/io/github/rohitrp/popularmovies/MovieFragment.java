@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class MovieFragment extends Fragment {
 
@@ -210,7 +211,7 @@ public class MovieFragment extends Fragment {
             }
 
             try {
-                return getMoviesDataFromJson(moviesJsonStr);
+                return getMoviesDataFromJson(moviesJsonStr, genresJsonStr);
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
@@ -273,7 +274,7 @@ public class MovieFragment extends Fragment {
             }
         }
 
-        private Movie[] getMoviesDataFromJson(String moviesJsonStr)
+        private Movie[] getMoviesDataFromJson(String moviesJsonStr, String genresJsonStr)
             throws JSONException {
 
             final String TMDB_RESULTS = "results";
@@ -284,11 +285,24 @@ public class MovieFragment extends Fragment {
             final String TMDB_TITLE = "original_title";
             final String TMDB_RATINGS = "vote_average";
             final String TMDB_BACKDROP_PATH = "backdrop_path";
+            final String TMDB_GENRES_IDS = "genre_ids";
+
+            final String TMDB_GENRES = "genres";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(TMDB_RESULTS);
 
+            JSONObject genresJson = new JSONObject(genresJsonStr);
+            JSONArray genresArray = genresJson.getJSONArray(TMDB_GENRES);
+
             Movie[] resultMovies = new Movie[moviesArray.length()];
+            HashMap<Integer, String> genresList = new HashMap<>();
+
+            // Store list of genres
+            for (int i = 0; i < genresArray.length(); i++) {
+                JSONObject genre = genresArray.getJSONObject(i);
+                genresList.put(genre.getInt("id"), genre.getString("name"));
+            }
 
             for (int i = 0; i < moviesArray.length(); i++) {
                 String title;
@@ -298,6 +312,8 @@ public class MovieFragment extends Fragment {
                 String releaseDate;
                 boolean isAdult;
                 String backdropPath;
+                JSONArray genresIdJsonArray;
+                ArrayList<String> genresIds = new ArrayList<>();
 
                 JSONObject currMovie = moviesArray.getJSONObject(i);
 
@@ -309,8 +325,14 @@ public class MovieFragment extends Fragment {
                 isAdult = currMovie.getBoolean(TMDB_ADULT);
                 backdropPath = currMovie.getString(TMDB_BACKDROP_PATH);
 
+                genresIdJsonArray = currMovie.getJSONArray(TMDB_GENRES_IDS);
+
+                for (int j = 0; j < genresIdJsonArray.length(); j++) {
+                    genresIds.add(genresList.get(genresIdJsonArray.getInt(j)));
+                }
+
                 resultMovies[i] = new Movie(title, posterPath, synopsis,
-                        ratings, releaseDate, isAdult, backdropPath);
+                        ratings, releaseDate, isAdult, backdropPath, genresIds);
             }
 
             return resultMovies;
