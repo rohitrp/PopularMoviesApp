@@ -5,12 +5,9 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -89,36 +86,33 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.moviedetailfragment, menu);
-
-            MenuItem menuItem = menu.findItem(R.id.menu_share);
-
-            ShareActionProvider mShareActionProvider =
-                    (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-
-            if (mShareActionProvider != null) {
-                mShareActionProvider.setShareIntent(createShareMovieIntent());
-            } else {
-                Log.d(LOG_TAG, "Share Action Provider is null?");
-            }
         }
 
-        private Intent createShareMovieIntent() {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
 
-            String shareMessage = "Title:\n" + mMovie.getTitle();
-            List<Movie.MovieDetail> movieDetails =
-                    mMovie.getTitleBodyPairs();
+            if (id == R.id.menu_share) {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
 
-            for (Movie.MovieDetail detail : movieDetails) {
-                shareMessage += "\n\n" + detail.getTitle() + ":\n" +
-                        detail.getBody();
+                String shareMessage = "Title:\n" + mMovie.getTitle();
+                List<Movie.MovieDetail> movieDetails =
+                        mMovie.getTitleBodyPairs();
+
+                for (Movie.MovieDetail detail : movieDetails) {
+                    shareMessage += "\n\n" + detail.getTitle() + ":\n" +
+                            detail.getBody();
+                }
+
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
+
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
             }
 
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-
-            return shareIntent;
+            return true;
         }
+
 
         private void setupRecyclerView(Movie movie) {
             mRecyclerView.setLayoutManager(new LinearLayoutManager(
