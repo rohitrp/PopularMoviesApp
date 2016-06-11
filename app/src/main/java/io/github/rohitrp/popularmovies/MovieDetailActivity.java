@@ -1,125 +1,130 @@
 package io.github.rohitrp.popularmovies;
 
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 public class MovieDetailActivity extends AppCompatActivity {
+    private final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
+
+    private RecyclerView mRecyclerView;
+    private Movie mMovie;
+    private MenuItem mShareMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.activity_movie_detail, new MovieDetailFragment())
-                    .commit();
-        }
-    }
+        Intent intent = getIntent();
+        mMovie = intent.getParcelableExtra(Intent.EXTRA_TEXT);
 
-    public static class MovieDetailFragment extends Fragment {
-        private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.activity_movie_detail_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        private RecyclerView mRecyclerView;
-        private Movie mMovie;
+        final CollapsingToolbarLayout collapsingToolbarLayout =
+                (CollapsingToolbarLayout) findViewById(R.id.activity_movie_detail_collapsing_toolbar);
+        collapsingToolbarLayout.setTitle(mMovie.getTitle());
 
-        public MovieDetailFragment() {
-            setHasOptionsMenu(true);
-        }
+        final ImageView backdrop = (ImageView) findViewById(R.id.activity_movie_detail_backdrop);
+        Picasso.with(this)
+                .load(mMovie.getBackdropUrl(Movie.POSTER_SIZE_LARGE))
+                .fit()
+                .into(backdrop);
 
-        @Override
-        public void onCreate(@Nullable Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-        }
+        mRecyclerView = (RecyclerView) findViewById(R.id.activity_movie_detail_rv);
+        setupRecyclerView(mMovie);
 
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.activity_movie_detail_appbar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                if (mShareMenuItem != null) {
 
-            View rootView = inflater.inflate(R.layout.fragment_detail_movie, container, false);
+                    // Boolean to check is toolbar is collapsed
+                    boolean showShareMenuItem =
+                            collapsingToolbarLayout.getHeight() + verticalOffset <
+                                    2 * ViewCompat.getMinimumHeight(collapsingToolbarLayout);
 
-            Intent intent = getActivity().getIntent();
-            mMovie = intent.getParcelableExtra(Intent.EXTRA_TEXT);
-
-            mRecyclerView = (RecyclerView) rootView.findViewById(R.id.fragment_movie_detail_rv);
-            setupRecyclerView(mMovie);
-
-            // Movie title
-            TextView titleView = (TextView) rootView.findViewById(R.id.movie_detail_title);
-            titleView.setText(mMovie.getTitle());
-
-            // Movie title's font
-            Typeface openSansCondensedLight = Typeface.createFromAsset(
-                    getActivity().getAssets(), "fonts/OpenSans-CondLight.ttf");
-            titleView.setTypeface(openSansCondensedLight);
-
-            // Backdrop image
-            ImageView imageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster);
-
-            Picasso.with(getContext())
-                    .load(mMovie.getBackdropUrl(Movie.POSTER_SIZE_EXTRA_LARGE))
-                    .fit()
-                    .placeholder(Movie.LOADING_PLACEHOLDER)
-                    .into(imageView);
-
-            return rootView;
-        }
-
-        @Override
-        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            inflater.inflate(R.menu.moviedetailfragment, menu);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-
-            if (id == R.id.menu_share) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-
-                String shareMessage = "Title:\n" + mMovie.getTitle();
-                List<Movie.MovieDetail> movieDetails =
-                        mMovie.getTitleBodyPairs();
-
-                for (Movie.MovieDetail detail : movieDetails) {
-                    shareMessage += "\n\n" + detail.getTitle() + ":\n" +
-                            detail.getBody();
+                    // If collapsed, show share menu item
+                    mShareMenuItem.setVisible(showShareMenuItem);
                 }
-
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
             }
+        });
 
-            return true;
-        }
+        FloatingActionButton shareFab =
+                (FloatingActionButton) findViewById(R.id.activity_movie_detail_share_fab);
 
-
-        private void setupRecyclerView(Movie movie) {
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(
-                    mRecyclerView.getContext()));
-
-            mRecyclerView.setAdapter(new MovieDetailRecyclerViewAdapter(
-                    getActivity(), movie.getTitleBodyPairs()));
-        }
+        shareFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startShareActivity();
+            }
+        });
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.moviedetailactivity, menu);
+        mShareMenuItem = menu.findItem(R.id.menu_share);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.menu_share) {
+            startShareActivity();
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to create share intent for both
+     * FloatingActionButton and Menu item
+     */
+    private void startShareActivity() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+
+        String shareMessage = "Title:\n" + mMovie.getTitle();
+        List<Movie.MovieDetail> movieDetails =
+                mMovie.getTitleBodyPairs();
+
+        for (Movie.MovieDetail detail : movieDetails) {
+            shareMessage += "\n\n" + detail.getTitle() + ":\n" +
+                    detail.getBody();
+        }
+
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
+
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+    }
+
+    private void setupRecyclerView(Movie movie) {
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(
+                mRecyclerView.getContext()));
+
+        mRecyclerView.setAdapter(new MovieDetailRecyclerViewAdapter(
+                this, movie.getTitleBodyPairs()));
+    }
+
 }
