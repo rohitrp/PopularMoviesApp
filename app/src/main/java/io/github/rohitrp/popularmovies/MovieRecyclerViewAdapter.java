@@ -53,7 +53,6 @@ public class MovieRecyclerViewAdapter
                 // TODO: Possible extension in part 2 - ability to bookmark movie
                 final Dialog dialog = new Dialog(v.getContext());
                 dialog.setContentView(R.layout.fragment_movie_dialog);
-                dialog.setTitle(mMovies.get(holder.getAdapterPosition()).getTitle());
 
                 TextView textView = (TextView) dialog.findViewById(R.id.dialog_text_view);
                 textView.setText(mMovies.get(holder.getAdapterPosition())
