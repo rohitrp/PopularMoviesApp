@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by Rohit on 08-06-2016.
  */
@@ -22,25 +25,20 @@ public class MovieDetailRecyclerViewAdapter
 
     private final Typeface mOpenSansCondensedLight;
 
-    private Context mContext;
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final View mView;
-        public final TextView mTitle;
-        public final TextView mBody;
+        @BindView(R.id.movie_detail_title_cardview_rv) TextView mTitle;
+        @BindView(R.id.movie_detail_body_cardview_rv) TextView mBody;
 
         public ViewHolder(View view) {
             super(view);
-            this.mView = view;
-            this.mTitle = (TextView) view.findViewById(R.id.movie_detail_title_cardview_rv);
-            this.mBody = (TextView) view.findViewById(R.id.movie_detail_body_cardview_rv);
+            ButterKnife.bind(this, view);
         }
     }
 
     public MovieDetailRecyclerViewAdapter(Context context,
                                           List<Movie.MovieDetail> movieDetails) {
         mMovieDetails = movieDetails;
-        mContext = context;
 
         mOpenSansCondensedLight = Typeface.createFromAsset(
                 context.getAssets(), "fonts/OpenSans-CondLight.ttf");
