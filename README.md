@@ -30,8 +30,8 @@ Follow these steps to build the app:
 
 #### Horizontal Orientation
 ---------------------------
-<img src="/screenshots/horizontal_movie_main_activity_popular">
-<img src="/screenshots/horizontal_movie_detail_activity">
+<img src="/screenshots/horizontal_movie_main_activity_popular.png">
+<img src="/screenshots/horizontal_movie_detail_activity.png">
 
 
 
