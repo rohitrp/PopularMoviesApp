@@ -21,7 +21,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/movie_detail_body_cardview_rv"/>
+            android:id="@+id/movie_detail_body_cardview_rv"
+            android:textColor="@color/colorSecondaryText"
+            android:textSize="22sp"/>
 
     </LinearLayout>
 

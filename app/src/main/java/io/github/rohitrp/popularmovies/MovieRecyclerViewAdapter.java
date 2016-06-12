@@ -49,6 +49,8 @@ public class MovieRecyclerViewAdapter
         holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+
+                // TODO: Possible extension in part 2 - ability to bookmark movie
                 final Dialog dialog = new Dialog(v.getContext());
                 dialog.setContentView(R.layout.fragment_movie_dialog);
                 dialog.setTitle(mMovies.get(holder.getAdapterPosition()).getTitle());

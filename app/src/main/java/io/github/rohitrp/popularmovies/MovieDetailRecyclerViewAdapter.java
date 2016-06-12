@@ -1,6 +1,7 @@
 package io.github.rohitrp.popularmovies;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,8 @@ public class MovieDetailRecyclerViewAdapter
 
     private final String LOG_TAG = MovieDetailRecyclerViewAdapter.class.getSimpleName();
     private List<Movie.MovieDetail> mMovieDetails;
+
+    private final Typeface mOpenSansCondensedLight;
 
     private Context mContext;
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -38,6 +41,9 @@ public class MovieDetailRecyclerViewAdapter
                                           List<Movie.MovieDetail> movieDetails) {
         mMovieDetails = movieDetails;
         mContext = context;
+
+        mOpenSansCondensedLight = Typeface.createFromAsset(
+                context.getAssets(), "fonts/OpenSans-CondLight.ttf");
     }
 
     @Override
@@ -54,6 +60,8 @@ public class MovieDetailRecyclerViewAdapter
 
         holder.mTitle.setText(title);
         holder.mBody.setText(body);
+
+        holder.mBody.setTypeface(mOpenSansCondensedLight);
     }
 
     @Override

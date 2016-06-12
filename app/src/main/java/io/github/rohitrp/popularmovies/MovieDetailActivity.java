@@ -42,15 +42,19 @@ public class MovieDetailActivity extends AppCompatActivity {
                 (CollapsingToolbarLayout) findViewById(R.id.activity_movie_detail_collapsing_toolbar);
         collapsingToolbarLayout.setTitle(mMovie.getTitle());
 
-        final ImageView backdrop = (ImageView) findViewById(R.id.activity_movie_detail_backdrop);
+        final ImageView backdropImageView = (ImageView) findViewById(R.id.activity_movie_detail_backdrop);
         Picasso.with(this)
-                .load(mMovie.getBackdropUrl(Movie.POSTER_SIZE_LARGE))
+                .load(mMovie.getBackdropUrl(Movie.POSTER_SIZE_EXTRA_LARGE))
                 .fit()
-                .into(backdrop);
+                .centerCrop()
+                .into(backdropImageView);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_movie_detail_rv);
         setupRecyclerView(mMovie);
 
+        // Since there are two ways to share movie - Share menu and FAB button -
+        // this makes sure that share menu is not visible when fab button is
+        // visible, and vice versa.
         AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.activity_movie_detail_appbar);
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override

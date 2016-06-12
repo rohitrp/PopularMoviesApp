@@ -22,6 +22,7 @@ public class Movie implements Parcelable {
     public static final String POSTER_SIZE_NORMAL = "w342";
     public static final String POSTER_SIZE_LARGE = "w500";
     public static final String POSTER_SIZE_EXTRA_LARGE = "w780";
+    public static final String POSTER_SIZE_ORIGINAL = "original";
 
     // Placeholder drawable
     public static final int LOADING_PLACEHOLDER = R.drawable.loading;
@@ -108,7 +109,7 @@ public class Movie implements Parcelable {
         movieDetails.add(new MovieDetail(genresTitle, TextUtils.join(", ", mGenres)));
         movieDetails.add(new MovieDetail(releaseDateTitle, mReleaseDate));
         movieDetails.add(new MovieDetail(ratingsTitle,
-                String.valueOf(mRatings)));
+                String.valueOf(mRatings) + " / 10"));
         movieDetails.add(new MovieDetail(isAdultTitle,
                 mIsAdult ? "Yes" : "No"));
 
