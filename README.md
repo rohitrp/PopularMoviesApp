@@ -10,7 +10,7 @@ to fetch the most popular and top rated movies data.
 Follow these steps to build the app:
 
 1. Get an API Key from TMDb.
-2. Create build.gradle file in the root directory
+2. Create a file with name "gradle.properties" (without quotes) in the root directory
 3. Add the following in the file:
 
     ```
