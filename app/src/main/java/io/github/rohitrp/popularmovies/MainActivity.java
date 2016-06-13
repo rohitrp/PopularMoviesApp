@@ -42,4 +42,14 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * This method can be called from fragments to change the
+     * title of ActionBar.
+     *
+     * @param actionBarTitle Title of action bar
+     */
+    public void setActionBarTitle(String actionBarTitle) {
+        getSupportActionBar().setSubtitle(actionBarTitle);
+    }
 }

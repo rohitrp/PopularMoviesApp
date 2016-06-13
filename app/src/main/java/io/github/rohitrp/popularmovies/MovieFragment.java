@@ -100,6 +100,36 @@ public class MovieFragment extends Fragment {
             updateMovies();
         }
 
+        String actionBarTitle = "";
+
+
+        // TODO: Try to find a better way to implement this
+        // Keys and values of ListPreference
+
+        // Keys
+        final String popularKey = getString(R.string.pref_sort_key_popular);
+        final String topRatedKey = getString(R.string.pref_sort_key_toprated);
+        final String nowPlayingKey = getString(R.string.pref_sort_key_nowplaying);
+        final String upcomingKey = getString(R.string.pref_sort_key_upcoming);
+
+        // Values
+        final String popularValue = getString(R.string.pref_sort_value_popular);
+        final String topRatedValue = getString(R.string.pref_sort_value_toprated);
+        final String nowPlayingValue = getString(R.string.pref_sort_value_nowplaying);
+        final String upcomingValue = getString(R.string.pref_sort_value_upcoming);
+
+        if (currentPref.equals(popularValue)) {
+            actionBarTitle = popularKey;
+        } else if (currentPref.equals(topRatedValue)) {
+            actionBarTitle = topRatedKey;
+        } else if (currentPref.equals(nowPlayingValue)) {
+            actionBarTitle = nowPlayingKey;
+        } else {
+            actionBarTitle = upcomingKey;
+        }
+
+        // Change title of ActionBar
+        ((MainActivity) getActivity()).setActionBarTitle(actionBarTitle);
     }
 
     @Nullable
