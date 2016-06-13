@@ -98,7 +98,7 @@ public class MovieDetailActivity extends AppCompatActivity {
             startShareActivity();
         }
 
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 
     /**

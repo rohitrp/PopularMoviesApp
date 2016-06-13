@@ -25,7 +25,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.github.rohitrp.popularmovies.SettingsActivity" />
         </activity>
-        <activity android:name=".MovieDetailActivity"></activity>
+        <activity
+            android:name=".MovieDetailActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
     </application>
 
 </manifest>
