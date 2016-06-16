@@ -4,14 +4,12 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -19,19 +17,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+
+import io.github.rohitrp.popularmovies.tmdbmodel.Genres;
+import io.github.rohitrp.popularmovies.tmdbmodel.TmdbMovies;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MovieFragment extends Fragment {
 
@@ -44,6 +50,7 @@ public class MovieFragment extends Fragment {
     private RecyclerView mRecyclerView;
 
     private ArrayList<Movie> mMoviesList;
+    private HashMap<Integer, String> mGenresList;
 
     public MovieFragment() {
         mMoviesList = new ArrayList<>();
@@ -100,7 +107,7 @@ public class MovieFragment extends Fragment {
             updateMovies();
         }
 
-        String actionBarTitle = "";
+        String actionBarTitle;
 
 
         // TODO: Try to find a better way to implement this
@@ -168,204 +175,114 @@ public class MovieFragment extends Fragment {
     }
 
     private void updateMovies() {
+
+        // Base URL for both movie and its genres
+        final String TMDB_BASE_URL =
+                "http://api.themoviedb.org/3/";
+        final String TMDB_API_KEY =
+                "api_key";
+
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
-
-        fetchMoviesTask.execute(sharedPreferences.getString(
+        String sortingPref = sharedPreferences.getString(
                 getString(R.string.pref_sort_key),
-                getString(R.string.pref_sort_default)));
+                getString(R.string.pref_sort_default));
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+        gsonBuilder.setDateFormat("yyyy-MM-dd");
+        Gson gson = gsonBuilder.create();
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                @Override
+                public okhttp3.Response intercept(Chain chain) throws IOException {
+                    Request request = chain.request();
+                    HttpUrl url = request.url().newBuilder()
+                            .addQueryParameter(TMDB_API_KEY, BuildConfig.TMDb_API_KEY)
+                            .build();
+
+                    request = request.newBuilder()
+                            .url(url)
+                            .build();
+
+                    return chain.proceed(request);
+                }
+                })
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(TMDB_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(client)
+                .build();
+
+        TmdbService tmdbService = retrofit.create(TmdbService.class);
+
+        Call<Genres> genresDataCall = tmdbService.getGenres();
+
+        genresDataCall.enqueue(new Callback<Genres>() {
+            @Override
+            public void onResponse(Call<Genres> call, Response<Genres> response) {
+                Genres genres = response.body();
+                mGenresList = new HashMap<Integer, String>();
+
+                for (Genres.Genre genre : genres.getGenres()) {
+                    mGenresList.put(genre.getId(), genre.getName());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Genres> call, Throwable t) {
+                Snackbar.make(getView(), "Fetching genres failed", Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        });
+
+        Call<TmdbMovies> moviesDataCall = tmdbService.getMoviesData(sortingPref);
+
+        moviesDataCall.enqueue(new Callback<TmdbMovies>() {
+            @Override
+            public void onResponse(Call<TmdbMovies> call, Response<TmdbMovies> response) {
+                TmdbMovies tmdbMovies = response.body();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+
+                mMoviesList.clear();
+
+                for (io.github.rohitrp.popularmovies.tmdbmodel.Movie movie : tmdbMovies.getResults()) {
+
+                    List<Integer> currMovieGenresIds = movie.getGenreIds();
+                    ArrayList<String> currMovieGenres = new ArrayList<String>();
+
+                    for (int genreId : currMovieGenresIds) {
+                        currMovieGenres.add(mGenresList.get(genreId));
+                    }
+
+                    mMoviesList.add(
+                            new Movie(
+                                movie.getTitle(),
+                                movie.getPosterPath(),
+                                movie.getOverview(),
+                                movie.getVoteAverage(),
+                                dateFormat.format(movie.getReleaseDate()),
+                                movie.getAdult(),
+                                movie.getBackdropPath(),
+                                currMovieGenres));
+                }
+                setAdapter();
+            }
+
+            @Override
+            public void onFailure(Call<TmdbMovies> call, Throwable t) {
+                String errorMsg = "Something went wrong. Seems like your internet is not working";
+                Snackbar.make(getView(), errorMsg, Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void setAdapter() {
         mRecyclerView.setAdapter(new MovieRecyclerViewAdapter(getActivity(),
                 mMoviesList));
-    }
-
-    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
-        @Override
-        protected Movie[] doInBackground(String... params) {
-
-            if (params.length == 0) return null;
-
-            HttpURLConnection urlConnection = null;
-
-            String moviesJsonStr = null;
-            String genresJsonStr = null;
-
-            try {
-
-                // Base URL for both movie and its genres
-                final String TMDB_BASE_URL =
-                        "http://api.themoviedb.org/3/";
-
-                // TMDb's API key
-                final String API_KEY_PARAM = "api_key";
-
-                // URL to fetch movie data
-                Uri moviesBuiltUri = Uri.parse(TMDB_BASE_URL).buildUpon()
-                        .appendPath("movie")
-                        .appendPath(params[0])
-                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDb_API_KEY)
-                        .build();
-
-                URL moviesUrl = new URL(moviesBuiltUri.toString());
-
-                // URL to fetch movie genres
-                Uri genresBuiltUri = Uri.parse(TMDB_BASE_URL).buildUpon()
-                        .appendPath("genre")
-                        .appendPath("movie")
-                        .appendPath("list")
-                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDb_API_KEY)
-                        .build();
-
-                URL genresUrl = new URL(genresBuiltUri.toString());
-
-                // Get movies data
-                urlConnection = (HttpURLConnection) moviesUrl.openConnection();
-                moviesJsonStr = fetchJsonData(urlConnection);
-
-                // Get genres data
-                urlConnection = (HttpURLConnection) genresUrl.openConnection();
-                genresJsonStr = fetchJsonData(urlConnection);
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-            }
-
-            try {
-                return getMoviesDataFromJson(moviesJsonStr, genresJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
-            // This will only happen if there was an error getting or parsing
-            // movies.
-            return null;
-        }
-
-        /**
-         * Helper method to fetch data from the provided url
-         * @param urlConnection URL connection opened with the url from
-         *                      which data is to be fetched
-         * @return JSON data received from the url connection
-         * @throws IOException
-         */
-        private String fetchJsonData(HttpURLConnection urlConnection)
-                throws IOException {
-
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-
-            if (inputStream == null) {
-                return null;
-            }
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                return null;
-            }
-
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
-                }
-            }
-
-            // Return the JSON received from the url
-            return buffer.toString();
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-            if (movies != null) {
-                mMoviesList = new ArrayList<>(Arrays.asList(movies));
-                setAdapter();
-            }
-        }
-
-        private Movie[] getMoviesDataFromJson(String moviesJsonStr, String genresJsonStr)
-            throws JSONException {
-
-            final String TMDB_RESULTS = "results";
-            final String TMDB_POSTER_PATH = "poster_path";
-            final String TMDB_ADULT = "adult";
-            final String TMDB_SYNOPSIS = "overview";
-            final String TMDB_RELEASE_DATE = "release_date";
-            final String TMDB_TITLE = "original_title";
-            final String TMDB_RATINGS = "vote_average";
-            final String TMDB_BACKDROP_PATH = "backdrop_path";
-            final String TMDB_GENRES_IDS = "genre_ids";
-
-            final String TMDB_GENRES = "genres";
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray moviesArray = moviesJson.getJSONArray(TMDB_RESULTS);
-
-            JSONObject genresJson = new JSONObject(genresJsonStr);
-            JSONArray genresArray = genresJson.getJSONArray(TMDB_GENRES);
-
-            Movie[] resultMovies = new Movie[moviesArray.length()];
-            HashMap<Integer, String> genresList = new HashMap<>();
-
-            // Store list of genres
-            for (int i = 0; i < genresArray.length(); i++) {
-                JSONObject genre = genresArray.getJSONObject(i);
-                genresList.put(genre.getInt("id"), genre.getString("name"));
-            }
-
-            for (int i = 0; i < moviesArray.length(); i++) {
-                String title;
-                String posterPath;
-                String synopsis;
-                double ratings;
-                String releaseDate;
-                boolean isAdult;
-                String backdropPath;
-                JSONArray genresIdJsonArray;
-                ArrayList<String> genresIds = new ArrayList<>();
-
-                JSONObject currMovie = moviesArray.getJSONObject(i);
-
-                title = currMovie.getString(TMDB_TITLE);
-                posterPath = currMovie.getString(TMDB_POSTER_PATH);
-                synopsis = currMovie.getString(TMDB_SYNOPSIS);
-                ratings = currMovie.getDouble(TMDB_RATINGS);
-                releaseDate = currMovie.getString(TMDB_RELEASE_DATE);
-                isAdult = currMovie.getBoolean(TMDB_ADULT);
-                backdropPath = currMovie.getString(TMDB_BACKDROP_PATH);
-
-                genresIdJsonArray = currMovie.getJSONArray(TMDB_GENRES_IDS);
-
-                for (int j = 0; j < genresIdJsonArray.length(); j++) {
-                    genresIds.add(genresList.get(genresIdJsonArray.getInt(j)));
-                }
-
-                resultMovies[i] = new Movie(title, posterPath, synopsis,
-                        ratings, releaseDate, isAdult, backdropPath, genresIds);
-            }
-
-            return resultMovies;
-        }
     }
 }
