@@ -33,11 +33,14 @@ import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
 
 public class MovieFragment extends Fragment {
 
@@ -50,7 +53,6 @@ public class MovieFragment extends Fragment {
     private RecyclerView mRecyclerView;
 
     private ArrayList<Movie> mMoviesList;
-    private HashMap<Integer, String> mGenresList;
 
     public MovieFragment() {
         mMoviesList = new ArrayList<>();
@@ -189,11 +191,14 @@ public class MovieFragment extends Fragment {
                 getString(R.string.pref_sort_key),
                 getString(R.string.pref_sort_default));
 
+        // Create custom Gson for parsing TMDb's custom data
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         gsonBuilder.setDateFormat("yyyy-MM-dd");
         Gson gson = gsonBuilder.create();
 
+        // Client for Retrofit to intercep URL and add a query parameter
+        // for TMDb's API key
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new Interceptor() {
                 @Override
@@ -211,68 +216,77 @@ public class MovieFragment extends Fragment {
                 }})
                 .build();
 
+        RxJavaCallAdapterFactory rxAdapter =
+                RxJavaCallAdapterFactory.createWithScheduler(Schedulers.io());
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(TMDB_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
+                .addCallAdapterFactory(rxAdapter)
                 .build();
 
         final TmdbService tmdbService = retrofit.create(TmdbService.class);
 
-        Call<Genres> genresDataCall = tmdbService.getGenres();
+        Observable<Genres> genresObservable = tmdbService.getGenres();
+        Observable<TmdbMovies> tmdbMoviesObservable =
+                tmdbService.getMoviesData(sortingPref);
 
-        genresDataCall.enqueue(new Callback<Genres>() {
-            @Override
-            public void onResponse(Call<Genres> call, Response<Genres> response) {
-                Genres genres = response.body();
-                mGenresList = new HashMap<Integer, String>();
+        // Zipping both observables to make sure list of genres is
+        // available before customizing movies data
+        Observable<Void> combinedGenresMoviesObservable =
+                Observable.zip(genresObservable, tmdbMoviesObservable,
+                        new Func2<Genres, TmdbMovies, Void>() {
+                            @Override
+                            public Void call(Genres genres, TmdbMovies tmdbMovies) {
+                                HashMap<Integer, String> genresList =
+                                        new HashMap<Integer, String>();
 
-                for (Genres.Genre genre : genres.getGenres()) {
-                    mGenresList.put(genre.getId(), genre.getName());
-                }
+                                for (Genres.Genre genre : genres.getGenres()) {
+                                    genresList.put(genre.getId(), genre.getName());
+                                }
 
-                getMoviesData(tmdbService, sortingPref);
-            }
+                                List<Movie> movies = tmdbMovies.getResults();
 
-            @Override
-            public void onFailure(Call<Genres> call, Throwable t) {
-                displayFailureSnackbar(getView());
-            }
-        });
-    }
+                                for (Movie movie : movies) {
 
-    private void getMoviesData(TmdbService tmdbService, String sortingPref) {
-        Call<TmdbMovies> moviesDataCall = tmdbService.getMoviesData(sortingPref);
+                                    List<Integer> currMovieGenresIds = movie.getGenreIds();
+                                    ArrayList<String> currMovieGenres = new ArrayList<String>();
 
-        moviesDataCall.enqueue(new Callback<TmdbMovies>() {
-            @Override
-            public void onResponse(Call<TmdbMovies> call, Response<TmdbMovies> response) {
-                TmdbMovies tmdbMovies = response.body();
-                List<Movie> movies = tmdbMovies.getResults();
+                                    for (int genreId : currMovieGenresIds) {
+                                        if (genresList.containsKey(genreId)) {
+                                            currMovieGenres.add(genresList.get(genreId));
+                                        }
+                                    }
 
-                for (Movie movie : movies) {
+                                    movie.setGenresList(currMovieGenres);
+                                }
 
-                    List<Integer> currMovieGenresIds = movie.getGenreIds();
-                    ArrayList<String> currMovieGenres = new ArrayList<String>();
+                                mMoviesList = new ArrayList<Movie>(movies);
 
-                    for (int genreId : currMovieGenresIds) {
-                        if (mGenresList.containsKey(genreId)) {
-                            currMovieGenres.add(mGenresList.get(genreId));
-                        }
+                                return null;
+                            }
+                        });
+
+        combinedGenresMoviesObservable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        setAdapter();
                     }
 
-                    movie.setGenresList(currMovieGenres);
-                }
+                    @Override
+                    public void onError(Throwable e) {
+                        displayFailureSnackbar(getView());
+                    }
 
-                mMoviesList = new ArrayList<Movie>(movies);
-                setAdapter();
-            }
+                    @Override
+                    public void onNext(Void aVoid) {
 
-            @Override
-            public void onFailure(Call<TmdbMovies> call, Throwable t) {
-                displayFailureSnackbar(getView());
-            }
-        });
+                    }
+                });
     }
 
     private void displayFailureSnackbar(View view) {
