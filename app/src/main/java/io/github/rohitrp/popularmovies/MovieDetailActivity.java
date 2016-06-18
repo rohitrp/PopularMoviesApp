@@ -19,6 +19,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import io.github.rohitrp.popularmovies.tmdbmodel.Movie;
+
 public class MovieDetailActivity extends AppCompatActivity {
     private final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
 

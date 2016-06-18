@@ -17,6 +17,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.github.rohitrp.popularmovies.tmdbmodel.Movie;
 
 public class MovieRecyclerViewAdapter
         extends RecyclerView.Adapter<MovieRecyclerViewAdapter.ViewHolder> {

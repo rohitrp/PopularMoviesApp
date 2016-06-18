@@ -22,12 +22,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import io.github.rohitrp.popularmovies.tmdbmodel.Genres;
+import io.github.rohitrp.popularmovies.tmdbmodel.Movie;
 import io.github.rohitrp.popularmovies.tmdbmodel.TmdbMovies;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -185,7 +185,7 @@ public class MovieFragment extends Fragment {
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        String sortingPref = sharedPreferences.getString(
+        final String sortingPref = sharedPreferences.getString(
                 getString(R.string.pref_sort_key),
                 getString(R.string.pref_sort_default));
 
@@ -208,8 +208,7 @@ public class MovieFragment extends Fragment {
                             .build();
 
                     return chain.proceed(request);
-                }
-                })
+                }})
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -218,7 +217,7 @@ public class MovieFragment extends Fragment {
                 .client(client)
                 .build();
 
-        TmdbService tmdbService = retrofit.create(TmdbService.class);
+        final TmdbService tmdbService = retrofit.create(TmdbService.class);
 
         Call<Genres> genresDataCall = tmdbService.getGenres();
 
@@ -231,6 +230,8 @@ public class MovieFragment extends Fragment {
                 for (Genres.Genre genre : genres.getGenres()) {
                     mGenresList.put(genre.getId(), genre.getName());
                 }
+
+                getMoviesData(tmdbService, sortingPref);
             }
 
             @Override
@@ -239,37 +240,32 @@ public class MovieFragment extends Fragment {
                         .show();
             }
         });
+    }
 
+    private void getMoviesData(TmdbService tmdbService, String sortingPref) {
         Call<TmdbMovies> moviesDataCall = tmdbService.getMoviesData(sortingPref);
 
         moviesDataCall.enqueue(new Callback<TmdbMovies>() {
             @Override
             public void onResponse(Call<TmdbMovies> call, Response<TmdbMovies> response) {
                 TmdbMovies tmdbMovies = response.body();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+                List<Movie> movies = tmdbMovies.getResults();
 
-                mMoviesList.clear();
-
-                for (io.github.rohitrp.popularmovies.tmdbmodel.Movie movie : tmdbMovies.getResults()) {
+                for (Movie movie : movies) {
 
                     List<Integer> currMovieGenresIds = movie.getGenreIds();
                     ArrayList<String> currMovieGenres = new ArrayList<String>();
 
                     for (int genreId : currMovieGenresIds) {
-                        currMovieGenres.add(mGenresList.get(genreId));
+                        if (mGenresList.containsKey(genreId)) {
+                            currMovieGenres.add(mGenresList.get(genreId));
+                        }
                     }
 
-                    mMoviesList.add(
-                            new Movie(
-                                movie.getTitle(),
-                                movie.getPosterPath(),
-                                movie.getOverview(),
-                                movie.getVoteAverage(),
-                                dateFormat.format(movie.getReleaseDate()),
-                                movie.getAdult(),
-                                movie.getBackdropPath(),
-                                currMovieGenres));
+                    movie.setGenresList(currMovieGenres);
                 }
+
+                mMoviesList = new ArrayList<Movie>(movies);
                 setAdapter();
             }
 

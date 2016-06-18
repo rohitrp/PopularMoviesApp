@@ -12,10 +12,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-/**
- * Created by Rohit on 08-06-2016.
- */
+import io.github.rohitrp.popularmovies.tmdbmodel.Movie;
 
 public class MovieDetailRecyclerViewAdapter
         extends RecyclerView.Adapter<MovieDetailRecyclerViewAdapter.ViewHolder> {
