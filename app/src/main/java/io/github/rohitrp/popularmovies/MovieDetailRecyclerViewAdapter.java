@@ -37,8 +37,9 @@ public class MovieDetailRecyclerViewAdapter
                                           List<Movie.MovieDetail> movieDetails) {
         mMovieDetails = movieDetails;
 
-        mOpenSansCondensedLight = Typeface.createFromAsset(
-                context.getAssets(), "fonts/OpenSans-CondLight.ttf");
+        mOpenSansCondensedLight = Typefaces.get(
+                context,
+                Typefaces.OPEN_SANS_CONDENSED_LIGHT_FONT);
     }
 
     @Override

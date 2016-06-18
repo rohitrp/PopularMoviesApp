@@ -62,8 +62,9 @@ public class MovieRecyclerViewAdapter
                 textView.setText(mMovies.get(holder.getAdapterPosition())
                     .getTitle());
 
-                Typeface openSansCondensedLight = Typeface.createFromAsset(
-                        mContext.getAssets(), "fonts/OpenSans-CondLight.ttf");
+                Typeface openSansCondensedLight = Typefaces.get(
+                        mContext,
+                        Typefaces.OPEN_SANS_CONDENSED_LIGHT_FONT);
 
                 textView.setTypeface(openSansCondensedLight);
 
