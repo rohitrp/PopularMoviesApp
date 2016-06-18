@@ -236,8 +236,7 @@ public class MovieFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Genres> call, Throwable t) {
-                Snackbar.make(getView(), "Fetching genres failed", Snackbar.LENGTH_LONG)
-                        .show();
+                displayFailureSnackbar(getView());
             }
         });
     }
@@ -271,10 +270,14 @@ public class MovieFragment extends Fragment {
 
             @Override
             public void onFailure(Call<TmdbMovies> call, Throwable t) {
-                String errorMsg = "Something went wrong. Seems like your internet is not working";
-                Snackbar.make(getView(), errorMsg, Snackbar.LENGTH_LONG).show();
+                displayFailureSnackbar(getView());
             }
         });
+    }
+
+    private void displayFailureSnackbar(View view) {
+        String errorMsg = "Something went wrong. Seems like your internet is not working";
+        Snackbar.make(view, errorMsg, Snackbar.LENGTH_LONG).show();
     }
 
     private void setAdapter() {
